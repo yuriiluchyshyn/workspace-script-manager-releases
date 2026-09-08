@@ -43,12 +43,12 @@ try {
 # --- extract -----------------------------------------------------------------
 New-Item -ItemType Directory -Force -Path $AppDir | Out-Null
 Write-Host "Extracting to $AppDir..."
-# Replace runtime dirs wholesale so removed files can't linger; user data lives
-# elsewhere (%USERPROFILE%\runner-yl), so this is safe.
-foreach ($d in @('build', 'server', 'desktop-launcher')) {
-  $p = Join-Path $AppDir $d
-  if (Test-Path $p) { Remove-Item -Recurse -Force $p }
-}
+# Clean the install dir so nothing but the runtime tarball's contents remain
+# (removes leftover source from older installs). node_modules is kept to avoid a
+# slow reinstall; user data lives in %USERPROFILE%\runner-yl.
+Get-ChildItem -Force -LiteralPath $AppDir |
+  Where-Object { $_.Name -ne 'node_modules' } |
+  ForEach-Object { Remove-Item -Recurse -Force -LiteralPath $_.FullName }
 & tar -xzf $TmpTarball -C $AppDir
 if ($LASTEXITCODE -ne 0) {
   Remove-Item -Force $TmpTarball -ErrorAction SilentlyContinue

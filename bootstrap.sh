@@ -48,9 +48,10 @@ fi
 # --- extract -----------------------------------------------------------------
 mkdir -p "$APP_DIR"
 echo "Extracting to $APP_DIR..."
-# Runtime dirs are replaced wholesale so a removed file in a new version can't
-# linger; user data lives elsewhere (~/runner-yl), so this is safe.
-rm -rf "$APP_DIR/build" "$APP_DIR/server" "$APP_DIR/desktop-launcher"
+# Clean the install dir so nothing but the runtime tarball's contents remain
+# (removes leftover source like src/, public/, examples/ from older installs).
+# node_modules is kept to avoid a slow reinstall; user data lives in ~/runner-yl.
+find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -name 'node_modules' -exec rm -rf {} +
 if ! tar -xzf "$TMP_TARBALL" -C "$APP_DIR"; then
   echo "Extraction failed."
   exit 1
